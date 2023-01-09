@@ -1,0 +1,45 @@
+version: "3"
+services:
+  db:
+    image: postgres:alpine
+    container_name: db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "dev"
+      POSTGRES_PASSWORD: "dev"
+      POSTGRES_DB: "crypto_analysis"
+
+  redis:
+    image: redis:alpine
+
+  backend:
+    container_name: backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    restart: always
+    build:
+      context: .
+    command: celery -A backend worker -l info # celery -A app worker -l info
+    volumes:
+      - .:/app
+    environment:
+      - DB_HOST=db
+      - DB_NAME=crypto_analysis
+      - DB_USER=dev
+      - DB_PASS=dev
+    depends_on:
+      - db
+      - redis
+      - backend
+
+networks:
+  main_network:
+    driver: bridge

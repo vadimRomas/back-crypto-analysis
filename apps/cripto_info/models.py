@@ -1,0 +1,22 @@
+from django.db import models
+
+# Create your models here.
+
+
+class GraphModel(models.Model):
+    class Meta:
+        db_table = "graph"
+
+    open_time = models.DateTimeField()
+    open = models.FloatField()
+    # "High",\
+    # "Low",\
+    # "Close",\
+    # "Volume",\
+    # "Close_time",\
+    # "Quote_asset_volume",
+    # "Number_of_trades",
+    # "Taker_buy_base_asset_volume",
+    # "Taker_buy_quote_asset_volume",
+    # "Ignore"
+
