@@ -11,6 +11,7 @@ backports.zoneinfo==0.2.1
 bcrypt==4.0.0
 billiard==3.6.4.0
 binance==0.3
+binance-futures-connector==3.2.0
 binance-connector==1.17.0
 boto3==1.24.66
 botocore==1.27.66
