@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
+
+from dotenv import dotenv_values
+
 from apps.user.configs import *
 from config import Config
 
@@ -22,6 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-#qjek35%tuizhuukch_%unphq+)3y!k&+!(j=-pk2xl6ke5&2q"
+env = dotenv_values(".env")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -110,11 +114,11 @@ WSGI_APPLICATION = "backend_django.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'crypto_analysis',
-        'USER': 'dev',
-        'PASSWORD': 'dev',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': env['db_name'],
+        'USER': env['db_username'],
+        'PASSWORD': env['db_password'],
+        'HOST': env['db_hostname'],
+        'PORT': env['db_port'],
     }
 }
 
