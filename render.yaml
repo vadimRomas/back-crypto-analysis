@@ -18,7 +18,7 @@ services:
     plan: free
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python3 manage.py runserver"
+    startCommand: "gunicorn backend_django.wsgi"
     autoDeploy: false
 #    envVars:
 #      - key: CELERY_BROKER_URL
@@ -32,7 +32,7 @@ services:
     plan: free
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "celery -A backend_django worker --loglevel=INFO"
+    startCommand: "celery flower --app backend_django --loglevel info"
     autoDeploy: false
 #    envVars:
 #      - key: CELERY_BROKER_URL
