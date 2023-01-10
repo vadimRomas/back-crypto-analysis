@@ -20,6 +20,7 @@ django-storages==1.13.1
 djangorestframework==3.13.1
 djangorestframework-jwt==1.11.0
 djangorestframework-simplejwt==5.2.0
+flower==1.2.0
 jmespath==1.0.1
 psycopg2==2.9.3
 PyJWT==1.7.1
