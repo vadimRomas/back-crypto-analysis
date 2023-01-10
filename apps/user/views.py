@@ -1,4 +1,3 @@
-import bcrypt
 from django.contrib.auth import get_user_model
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView, get_object_or_404, ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser

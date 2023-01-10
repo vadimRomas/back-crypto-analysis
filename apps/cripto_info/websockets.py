@@ -11,8 +11,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
-api_key = '9wdt1hUkbaqX8V5wi6QKkWn2JHQv7ux6ydScV1g22tbARcYyQplEBNl339IB1WPd'
-api_secret = 'HSawkzk7tca8uJYA6UkDqsomWWODOEiUcgmHlV0LIaaBSRUHodXQVzD7EdQMXJ1W'
+
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
