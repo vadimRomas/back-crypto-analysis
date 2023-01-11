@@ -167,13 +167,13 @@ def set_all():
     list_symbols = [item['symbol'] for item in exchange_info['symbols'] if
                     "USDT" in item['symbol']]  # 430 elements with 'if', 2137 elements without 'if'
 
-    while True:
-        executor = ThreadPoolExecutor(max_workers=3)
-        a = executor.submit(my_cache.spot_depths, list_symbols[:len(list_symbols) // 2])
-        b = executor.submit(my_cache.spot_depths, list_symbols[len(list_symbols) // 2:])
-        result_future = executor.submit(my_cache.future_depth)
-        cache.set("spot_depths", json.dumps(a.result() + b.result()), timeout=None)
-        cache.set("future_depths", json.dumps(result_future.result()), timeout=None)
+    # while True:
+    #     executor = ThreadPoolExecutor(max_workers=3)
+    #     a = executor.submit(my_cache.spot_depths, list_symbols[:len(list_symbols) // 2])
+    #     b = executor.submit(my_cache.spot_depths, list_symbols[len(list_symbols) // 2:])
+    #     result_future = executor.submit(my_cache.future_depth)
+    #     cache.set("spot_depths", json.dumps(a.result() + b.result()), timeout=None)
+    #     cache.set("future_depths", json.dumps(result_future.result()), timeout=None)
 
 
         # todo send to front with websocket
