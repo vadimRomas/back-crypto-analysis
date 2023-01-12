@@ -229,7 +229,7 @@ def main():
     print('Start!')
     symbols = ["BINANCE:XRPUSDT", "BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:BNBUSDT"]
     while True:
-
+        sleep(0.01)
         analysis = get_multiple_analysis(screener="crypto", interval=Interval.INTERVAL_1_HOUR,
                                          symbols=symbols)
 
