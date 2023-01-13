@@ -264,7 +264,7 @@ def buy_or_sell(what, symbol, interval):
 def main():
     # send('Start!', broadcast=True)
     print('Start!')
-    os.mkdir('./result)
+    os.mkdir('./result')
     symbols = ["BINANCE:XRPUSDT", "BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:BNBUSDT"]
     intervals = [Interval.INTERVAL_1_MINUTE, Interval.INTERVAL_15_MINUTES, Interval.INTERVAL_30_MINUTES, Interval.INTERVAL_1_HOUR]
     # interval = Interval.INTERVAL_15_MINUTES
