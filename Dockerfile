@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y make automake gcc g++ subversion libzba
 #RUN apk add make automake gcc g++ subversion python3.8-dev
 #RUN apk add --no-cache --virtual ..build-deps gcc musl-dev postgresql-dev
 RUN pip install --upgrade pip
-
+RUN pip install pyOpenSSL --upgrade
 RUN pip install -r /requirements.txt
 
 RUN mkdir /app

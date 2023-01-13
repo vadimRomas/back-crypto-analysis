@@ -1,5 +1,11 @@
-from binance.streams import ThreadedWebsocketManager
+import asyncio
+from django.core.cache import cache
+
+from binance.client import AsyncClient
+from binance.depthcache import ThreadedDepthCacheManager
+from binance.streams import ThreadedWebsocketManager, BinanceSocketManager
 from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient
+from celery import shared_task
 
 
 class OrderBook:
@@ -51,6 +57,68 @@ class ChatConsumer(WebsocketConsumer):
 
 
 
+import time
+
+from config import Config
+
+api_key = Config.binance_key
+api_secret = Config.binance_secret_key
+
+@shared_task()
+async def main_ws():
+
+    symbol = 'BNBBTC'
+    twm = ThreadedWebsocketManager()
+    twm.start()
+
+    # depth cache manager using threads
+    dcm = ThreadedDepthCacheManager()
+    dcm.start()
+
+    def handle_socket_message(msg):
+        print(f"message type: {msg['e']}")
+        print(msg)
+
+    def handle_dcm_message(depth_cache):
+        bids = depth_cache.get_bids()
+        print(len(bids))
+        asks = depth_cache.get_asks()
+        only_qty = [bid[1] for bid in bids]
+        only_qty.sort(reverse=True)
+        cache.set('qwerty', json.dumps({"a": asks, "b": bids}))
+
+
+        # print(only_qty)
+
+        # print(dir(depth_cache))
+        # print(len(depth_cache.get_asks()))
+        # print(depth_cache.get_asks().sort(reverse=True))
+
+        # if depth_cache.get_asks()[:5][1][1] > 19:
+        #     ...
+        print(f"symbol {depth_cache.symbol}")
+        # print("top 5 bids")
+        # print(depth_cache.get_bids())
+        # print("top 5 asks")
+        # print(depth_cache.get_asks())
+        # print("last update time {}".format(depth_cache.update_time))
+
+    # There is no current event loop in thread
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    # asyncio.set_event_loop(asyncio.new_event_loop())
+    # twm.start_kline_socket(callback=handle_socket_message, symbol='BNBBTC')
+
+    dcm.start_depth_cache(callback=handle_dcm_message, symbol='ETHUSDT')
+    # twm.start_depth_socket(callback=handle_socket_message, symbol='ETHUSDT')
+    # streams = ["btcusdt@trade", "btcusdt@kline_1m"]
+    # twm.start_multiplex_socket(callback=handle_socket_message, streams=streams)
+    # replace with a current options symbol
+    # options_symbol = 'BTC-210430-36000-C'
+    # dcm.start_options_depth_cache(callback=handle_dcm_message, symbol=options_symbol)
+
+    # join the threaded managers to the main thread
+    twm.join()
+    dcm.join()
 
 
 

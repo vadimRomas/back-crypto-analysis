@@ -5,6 +5,9 @@ from time import sleep
 from random import randint
 from asgiref.sync import async_to_sync
 from binance.um_futures import UMFutures
+from tradingview_ta import Interval
+
+from apps.cripto_info.websockets import main_ws
 from config import Config
 from channels.generic.websocket import WebsocketConsumer
 
@@ -21,10 +24,11 @@ from binance.client import Client
 from binance.spot import Spot
 from django.core.cache import cache
 
-from apps.cripto_info.tasks import set_all, MyCache, main
+from apps.cripto_info.tasks import set_all, MyCache, main, set_depth_cache, buy_or_sell
 
 spot = Spot()
 client = Client(Config.binance_key, Config.binance_secret_key)
+
 
 class GraphRetrieveAPIView(ListAPIView):
     queryset = GraphModel.objects.all()
@@ -38,12 +42,17 @@ class GraphRetrieveAPIView(ListAPIView):
 
 def all_symbols(request):
     # MyCache().future_depth()
+    # cache.delete('symbols')
+    # print('yoben~')
+    # MyCache().bot_depth()
+    # print('~boben')
+    # main_ws()
     result = cache.get('symbols')
     if not result:
-        set_all.delay()
+        # set_all.delay()
         main.delay()
-        exchange_info = client.get_exchange_info()
-        result = [item['symbol'] for item in exchange_info['symbols']]
+        exchange_info = spot.ticker_price()
+        result = [item['symbol'] for item in exchange_info]
         result = json.dumps(result)
 
     return HttpResponse(result, content_type='application/json')
@@ -77,7 +86,7 @@ def graphs(request):
     # with open("btc_usdt.csv", "w") as file:
     #     writer = csv.writer(file)
     #     writer.writerow(fild_name)
-    #     writer.writerows(tak)
+    #     writer.writerows(kline)
 
     # air_quality = pd.read_csv("btc_usdt.csv")
     # table_statics = air_quality.describe()
@@ -104,7 +113,7 @@ def get_price(request):
     symbol = request.GET['symbol']
     # res = client.get_exchange_info()
     op = client.get_symbol_info(symbol)
-    print(spot.ticker_price(symbol))
+    print(spot.ticker_price())
 
     return HttpResponse(op, content_type="application/json")
 
@@ -133,21 +142,42 @@ def search_big_gamer(request):
     # long_short_account_ratio = UMFutures().long_short_account_ratio(period='5m', symbol='BTCUSDT')
     long_short_account_ratio_ethusdt = UMFutures().long_short_account_ratio(period='5m', symbol='ethusdt')
 
-    return HttpResponse(json.dumps({"spot": spot_result, "future": future_result, "long_short_account_ratio": [long_short_account_ratio_btcusdt[-1], long_short_account_ratio_ethusdt[-1]]}), 200)
+    return HttpResponse(json.dumps({"spot": spot_result, "future": future_result,
+                                    "long_short_account_ratio": [long_short_account_ratio_btcusdt[-1],
+                                                                 long_short_account_ratio_ethusdt[-1]]}), 200)
 
 
 def get_tradingview_bot(request):
-    result = {}
+    result = {"XRPUSDT": [], "BTCUSDT": [], "ETHUSDT": [], "BNBUSDT": []}
     symbols = ["XRPUSDT", "BTCUSDT", "ETHUSDT", "BNBUSDT"]
-    for symbol in symbols:
+    intervals = [Interval.INTERVAL_1_MINUTE, Interval.INTERVAL_15_MINUTES, Interval.INTERVAL_30_MINUTES,
+                 Interval.INTERVAL_1_HOUR]
 
-        with open(f'result/{symbol}.csv', 'r') as file:
-            dict_file = []
-            reader = csv.DictReader(file)
-            for row in reader:
-                dict_file.append(row)
-            result.update({symbol: dict_file})
+    for symbol in symbols:
+        for interval in intervals:
+
+            try:
+
+                with open(f'result/{symbol}-{interval}.csv', 'r') as file:
+                    reader = csv.DictReader(file)
+
+                    for row in reader:
+                        result[symbol].append(row)
+
+            except FileNotFoundError as error:
+                ...
+
     return HttpResponse(json.dumps(result), 200)
+
+
+def get_depth(request):
+    # dept_socket_manager.delay()
+    # set_depth_cache.delay()
+    # main.delay()
+    # buy_or_sell('STRONG_SELL', 'ETHUSDT', '15m')
+    result = cache.get('qwerty')
+    return HttpResponse(result, 200)
+
 
 def websocket_big_gamer():
     # todo change on websocket
@@ -158,40 +188,28 @@ def websocket_big_gamer():
 
 class PracticeConsumer(AsyncConsumer):
 
-    async def websocket_connect(self,event):
+    async def websocket_connect(self, event):
         # when websocket connects
-        print("connected",event)
+        print("connected", event)
 
         await self.send({"type": "websocket.accept",
                          })
 
+        await self.send({"type": "websocket.send",
+                         "text": 0})
 
-
-        await self.send({"type":"websocket.send",
-                         "text":0})
-
-
-
-
-
-    async def websocket_receive(self,event):
+    async def websocket_receive(self, event):
         # when messages is received from websocket
-        print("receive",event)
-
-
+        print("receive", event)
 
         sleep(1)
 
         await self.send({"type": "websocket.send",
-                         "text":str(randint(0,100))})
-
-
-
+                         "text": str(randint(0, 100))})
 
     async def websocket_disconnect(self, event):
         # when websocket disconnects
         print("disconnected", event)
-
 
 
 class TextRoomConsumer(WebsocketConsumer):
@@ -204,6 +222,7 @@ class TextRoomConsumer(WebsocketConsumer):
             self.channel_name
         )
         self.accept()
+
     def disconnect(self, close_code):
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
@@ -236,6 +255,7 @@ class TextRoomConsumer(WebsocketConsumer):
             'sender': sender
         }))
 
+
 def room(request, room_name):
     # tesla = TA_Handler(
     #     symbol="TSLA",
@@ -246,8 +266,6 @@ def room(request, room_name):
     # print(tesla.get_analysis().summary)
     result = {"room_name": room_name}
     return HttpResponse(json.dumps(result), 200)
-
-
 
 # def lambda_handler(event, context):
 #     print(event)
