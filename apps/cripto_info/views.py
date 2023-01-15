@@ -56,7 +56,7 @@ def all_symbols(request):
     result = cache.get('symbols')
     if not result:
         # set_all.delay()
-        main.delay()
+        # main.delay()
         exchange_info = spot.ticker_price()
         result = [item['symbol'] for item in exchange_info]
         result = json.dumps(result)
