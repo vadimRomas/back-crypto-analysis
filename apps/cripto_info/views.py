@@ -7,6 +7,8 @@ from asgiref.sync import async_to_sync
 from binance.um_futures import UMFutures
 from tradingview_ta import Interval
 
+from apps.cripto_info.models import TradingviewBot
+from apps.cripto_info.serializers import TradingviewBotSerializer
 from apps.cripto_info.websockets import main_ws
 from config import Config
 from channels.generic.websocket import WebsocketConsumer
@@ -16,9 +18,9 @@ from django.http import HttpResponse
 
 from rest_framework.generics import ListAPIView
 
-from apps.cripto_info.models import GraphModel
-
-from apps.cripto_info.serializers import GraphSerializer
+# from apps.cripto_info.models import GraphModel
+#
+# from apps.cripto_info.serializers import GraphSerializer
 import pprint
 from binance.client import Client
 from binance.spot import Spot
@@ -29,15 +31,19 @@ from apps.cripto_info.tasks import set_all, MyCache, main, set_depth_cache, buy_
 spot = Spot()
 client = Client(Config.binance_key, Config.binance_secret_key)
 
+class ListTradingview(ListAPIView):
+    queryset = TradingviewBot.objects.all()
+    serializer_class = TradingviewBotSerializer
 
-class GraphRetrieveAPIView(ListAPIView):
-    queryset = GraphModel.objects.all()
-    serializer_class = GraphSerializer
 
-    def graph(self, request):
-        queryset = self.get_queryset()
-        pprint.pprint(queryset)
-        return HttpResponse('Hello World!')
+# class GraphRetrieveAPIView(ListAPIView):
+#     queryset = GraphModel.objects.all()
+#     serializer_class = GraphSerializer
+#
+#     def graph(self, request):
+#         queryset = self.get_queryset()
+#         pprint.pprint(queryset)
+#         return HttpResponse('Hello World!')
 
 
 def all_symbols(request):
@@ -173,7 +179,7 @@ def get_tradingview_bot(request):
 def get_depth(request):
     # dept_socket_manager.delay()
     # set_depth_cache.delay()
-    # main.delay()
+    main.delay()
     # buy_or_sell('STRONG_SELL', 'ETHUSDT', '15m')
     result = cache.get('qwerty')
     return HttpResponse(result, 200)

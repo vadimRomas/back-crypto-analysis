@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "storages",
     "channels",
 
+    "backend_django",
     "apps.user",
     "apps.my_payments",
     "apps.cripto_info",
@@ -216,7 +217,7 @@ AWS_LOCATION = 'static'
 #     os.path.join(BASE_DIR, 'mysite/static'),
 # ]
 # STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 ASGI_APPLICATION = "backend_django.asgi.application"
 CHANNEL_LAYERS = {

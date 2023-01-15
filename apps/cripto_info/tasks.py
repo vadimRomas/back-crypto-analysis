@@ -4,6 +4,13 @@ import json
 from datetime import datetime
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
+import os
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend_django.settings")
+
+import django
+
+django.setup()
 
 import requests
 from binance.depthcache import ThreadedDepthCacheManager
@@ -17,7 +24,9 @@ from binance.client import Client, AsyncClient
 from binance.spot import Spot
 from binance.error import ClientError
 from tradingview_ta import get_multiple_analysis, Interval
+from urllib3.exceptions import ProtocolError
 
+from apps.cripto_info.models import TradingviewBot
 from config import Config
 
 api_secret = 'ygb5tBtlM5XQfUcsTodjaUHihLuNMDUeK43Na9JO6p2iNffKPlncTmpscgu6RiD9'
@@ -39,8 +48,8 @@ class MyCache:
 
             depths = self.spot.depth(symbol=symbol)  # todo add limit 5000
             if depths['asks']:
-                max_ask = max([float(ask[1]) for ask in depths['asks']]) # sell
-                max_bid = max([float(bid[1]) for bid in depths['bids']]) # buy
+                max_ask = max([float(ask[1]) for ask in depths['asks']])  # sell
+                max_bid = max([float(bid[1]) for bid in depths['bids']])  # buy
 
                 ask = [
                     {
@@ -74,6 +83,7 @@ class MyCache:
 
         # print(f'Finish time: {datetime.now()}')
         return result
+
     def bot_depth(self):
         #ETHUSDT 30 minute, volume 2922.8883, ten_volume = volume * 0.005 = 14.6144415, len_ask = 17
         symbol = 'BTCUSDT'
@@ -198,65 +208,114 @@ def set_all():
         # todo send to front with websocket
 
 
+# def buy_or_sell(what, symbol, interval):
+#     # spot = Spot()
+#     # price = float(spot.ticker_price(symbol)['price'])
+#     time = datetime.now()
+#
+#     sleep(0.01)
+#     spot = Spot()
+#     price = float(spot.ticker_price(symbol)['price'])
+#
+#     try:
+#         with open(f"result/{symbol}-{interval}.csv", "r") as file:
+#             last_reader = list(csv.DictReader(file))
+#             file.close()
+#     except FileNotFoundError as error:
+#         with open(f"result/{symbol}-{interval}.csv", "a") as file:
+#             writer = csv.writer(file)
+#             writer.writerow(['symbol', "price", 'event', 'interval', 'time'])
+#             writer.writerow([symbol, price, what, interval, time])
+#             file.close()
+#         return
+#
+#     if last_reader:
+#         last_reader = last_reader[-1]
+#     else:
+#         with open(f"result/{symbol}-{interval}.csv", "a", newline='') as file:
+#             writer = csv.writer(file)
+#             writer.writerow([symbol, price, what, interval, time])
+#             file.close()
+#         return
+#
+#     old_price = float(last_reader['price'])
+#     ten_minus = old_price - old_price * 0.02
+#     ten_plus = old_price * 0.02 + old_price
+#
+#     if last_reader['event'] == what and ten_plus <= price >= ten_minus:
+#         with open(f"result/{symbol}-{interval}.csv", "a",
+#                   newline='') as file:  # client.create_test_order(symbol=symbol, side='BUY', type='LIMIT', timeInForce='GTC', quantity=100, price=200)
+#             writer = csv.writer(file)
+#             writer.writerow([symbol, price, what, interval, time])
+#             file.close()
+#     elif last_reader['event'] != what:
+#
+#         with open(f"result/{symbol}-{interval}.csv", "a") as file:
+#             writer = csv.writer(file)
+#             writer.writerow([symbol, price, what, interval, time])
+#             file.close()
+#
+#         # if what == 'STRONG_SELL':
+#         #     ten = price * 0.03 - price
+#         #     print('STRONG_SELL')
+#         # else:
+#         #     print('STRONG_BUY')
+#         # if what == what and ten >= price:
+#         #     return
+#     # fild_name = ['symbol', "price", 'event', 'interval', 'time']
+#     # with open(f"result/{symbol}.csv", "a") as file:
+#     #     writer = csv.writer(file)
+#     #     writer.writerow([symbol, price, what, time])
+#     # client = Client(Config.binance_key, Config.binance_secret_key)
+#     return f'symdol: {symbol}, price:{price}, what: {what}'
+
+
 def buy_or_sell(what, symbol, interval):
-    # spot = Spot()
-    # price = float(spot.ticker_price(symbol)['price'])
     time = datetime.now()
 
     sleep(0.01)
     spot = Spot()
     price = float(spot.ticker_price(symbol)['price'])
+    all_bots = TradingviewBot.objects.filter(what=what, symbol=symbol, interval=interval).all()
 
-    try:
-        with open(f"result/{symbol}-{interval}.csv", "r") as file:
-            last_reader = list(csv.DictReader(file))
-            file.close()
-    except FileNotFoundError as error:
-        with open(f"result/{symbol}-{interval}.csv", "a") as file:
-            writer = csv.writer(file)
-            writer.writerow(['symbol', "price", 'event', 'interval', 'time'])
-            writer.writerow([symbol, price, what, interval, time])
-            file.close()
+    if not len(all_bots):
+        bot = TradingviewBot(
+            symbol=symbol,
+            price=price,
+            what=what,
+            interval=interval,
+            time=time
+        )
+        bot.save()
         return
+    # print(all_bots.last().time, 'last_time')
+    last_signal = all_bots.last()
 
-    if last_reader:
-        last_reader = last_reader[-1]
-    else:
-        with open(f"result/{symbol}-{interval}.csv", "a", newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([symbol, price, what, interval, time])
-            file.close()
-        return
-
-    old_price = float(last_reader['price'])
+    old_price = float(last_signal.price)
     ten_minus = old_price - old_price * 0.02
     ten_plus = old_price * 0.02 + old_price
 
-    if last_reader['event'] == what and ten_plus <= price >= ten_minus:
-        with open(f"result/{symbol}-{interval}.csv", "a", newline='') as file: # client.create_test_order(symbol=symbol, side='BUY', type='LIMIT', timeInForce='GTC', quantity=100, price=200)
-            writer = csv.writer(file)
-            writer.writerow([symbol, price, what, interval, time])
-            file.close()
-    elif last_reader['event'] != what:
+    if last_signal.what == what and ten_plus <= price >= ten_minus:
+        bot = TradingviewBot(
+            symbol=symbol,
+            price=price,
+            what=what,
+            interval=interval,
+            time=time
+        )
+        bot.save()
+        return
+    elif last_signal.what != what:
 
-        with open(f"result/{symbol}-{interval}.csv", "a") as file:
-            writer = csv.writer(file)
-            writer.writerow([symbol, price, what, interval, time])
-            file.close()
-
-        # if what == 'STRONG_SELL':
-        #     ten = price * 0.03 - price
-        #     print('STRONG_SELL')
-        # else:
-        #     print('STRONG_BUY')
-        # if what == what and ten >= price:
-        #     return
-    # fild_name = ['symbol', "price", 'event', 'interval', 'time']
-    # with open(f"result/{symbol}.csv", "a") as file:
-    #     writer = csv.writer(file)
-    #     writer.writerow([symbol, price, what, time])
-    # client = Client(Config.binance_key, Config.binance_secret_key)
-    return f'symdol: {symbol}, price:{price}, what: {what}'
+        bot = TradingviewBot(
+            symbol=symbol,
+            price=price,
+            what=what,
+            interval=interval,
+            time=time
+        )
+        bot.save()
+        return
 
 # def price_websocket
 
@@ -265,7 +324,8 @@ def main():
     # send('Start!', broadcast=True)
     print('Start!')
     symbols = ["BINANCE:XRPUSDT", "BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:BNBUSDT"]
-    intervals = [Interval.INTERVAL_1_MINUTE, Interval.INTERVAL_15_MINUTES, Interval.INTERVAL_30_MINUTES, Interval.INTERVAL_1_HOUR]
+    intervals = [Interval.INTERVAL_1_MINUTE, Interval.INTERVAL_15_MINUTES, Interval.INTERVAL_30_MINUTES,
+                 Interval.INTERVAL_1_HOUR]
     # interval = Interval.INTERVAL_15_MINUTES
     while True:
 
@@ -274,10 +334,10 @@ def main():
             # sleep(1)
             try:
                 analyses = get_multiple_analysis(screener="crypto", interval=interval, symbols=symbols)
-            except ConnectionError as error:
+            except ProtocolError as error:
                 print(error)
                 sleep(20)
-
+                analyses = get_multiple_analysis(screener="crypto", interval=interval, symbols=symbols)
 
             for analysis in analyses:
                 symbol = analyses[analysis].symbol
@@ -286,13 +346,14 @@ def main():
                 if summary['RECOMMENDATION'] == 'STRONG_SELL' or summary['RECOMMENDATION'] == 'STRONG_BUY':
                     print(buy_or_sell(summary['RECOMMENDATION'], symbol, interval))
 
+
 def buy_or_sell_test():
     buy_or_sell('STRONG_SELL', "BTCUSDT", '15m')
+
 
 @shared_task()
 def dept_socket_manager():
     async def main_as():
-
         client = await AsyncClient.create()
         bm = BinanceSocketManager(client)
         # start any sockets here, i.e a trade socket
@@ -308,7 +369,6 @@ def dept_socket_manager():
                 # print(res)
 
         await client.close_connection()
-
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main_as())
@@ -338,7 +398,6 @@ def set_depth_cache():
         # only_qty = [bid[1] for bid in bids]
         # only_qty.sort(reverse=True)
         cache.set('qwerty', json.dumps({"a": asks, "b": bids}))
-
 
         # print(only_qty)
 
