@@ -272,7 +272,6 @@ def set_all():
 def buy_or_sell(what, symbol, interval):
     time = datetime.now()
 
-    sleep(0.01)
     spot = Spot()
     price = float(spot.ticker_price(symbol)['price'])
     all_bots = TradingviewBot.objects.filter(what=what, symbol=symbol, interval=interval).all()
@@ -322,32 +321,24 @@ def buy_or_sell(what, symbol, interval):
 def main():
     # send('Start!', broadcast=True)
     print('Start!')
-    symbols = ["BINANCE:XRPUSDT", "BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:BNBUSDT"]
+    symbols = ["BINANCE:XRPUSDT", "BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:BNBUSDT", "BINANCE:CRVUSDT", "BINANCE:XRPBUSD", "BINANCE:BTCBUSD", "BINANCE:ETHBUSDT", "BINANCE:BNBBUSD", "BINANCE:CRVBUSD"]
     intervals = [Interval.INTERVAL_1_MINUTE, Interval.INTERVAL_15_MINUTES, Interval.INTERVAL_30_MINUTES,
                  Interval.INTERVAL_1_HOUR]
-    # interval = Interval.INTERVAL_15_MINUTES
+
     while True:
 
         for interval in intervals:
 
-            # sleep(1)
-            try:
-                analyses = get_multiple_analysis(screener="crypto", interval=interval, symbols=symbols)
-            except ProtocolError as error:
-                print(error)
-                sleep(20)
-                analyses = get_multiple_analysis(screener="crypto", interval=interval, symbols=symbols)
+            analyses = get_multiple_analysis(screener="crypto", interval=interval, symbols=symbols) # Transport endpoint is not connected
 
             for analysis in analyses:
                 symbol = analyses[analysis].symbol
                 summary = analyses[analysis].summary
 
                 if summary['RECOMMENDATION'] == 'STRONG_SELL' or summary['RECOMMENDATION'] == 'STRONG_BUY':
-                    print(buy_or_sell(summary['RECOMMENDATION'], symbol, interval))
+                    buy_or_sell(summary['RECOMMENDATION'], symbol, interval)
 
-
-def buy_or_sell_test():
-    buy_or_sell('STRONG_SELL', "BTCUSDT", '15m')
+        sleep(3)
 
 
 @shared_task()
