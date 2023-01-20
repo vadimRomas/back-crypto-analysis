@@ -28,8 +28,6 @@ from urllib3.exceptions import ProtocolError
 from apps.cripto_info.models import TradingviewBot
 from config import Config
 
-api_secret = 'ygb5tBtlM5XQfUcsTodjaUHihLuNMDUeK43Na9JO6p2iNffKPlncTmpscgu6RiD9'
-api_key = 'OX7EVVD009ldFoCJHp7KjQwDGGj69Hp8LdAzHGLuwpj97RZFXVbLkSiWOcRupQ9y'
 
 
 class MyCache:
@@ -319,11 +317,9 @@ def buy_or_sell(what, symbol, interval):
 
 @shared_task()
 def main():
-    # send('Start!', broadcast=True)
     print('Start!')
-    symbols = ["BINANCE:XRPUSDT", "BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:BNBUSDT", "BINANCE:CRVUSDT"]
-    intervals = [Interval.INTERVAL_1_MINUTE, Interval.INTERVAL_15_MINUTES, Interval.INTERVAL_30_MINUTES,
-                 Interval.INTERVAL_1_HOUR]
+    symbols = ["BINANCE:XRPUSDT", "BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:CRVUSDT", "BINANCE:BNBUSDT", "BINANCE:ADAUSDT", "BINANCE:SOLUSDT", "BINANCE:DOTUSDT", "BINANCE:LTCUSDT", "BINANCE:AVAXUSDT"]
+    intervals = [Interval.INTERVAL_1_MINUTE, Interval.INTERVAL_15_MINUTES, Interval.INTERVAL_30_MINUTES, Interval.INTERVAL_1_HOUR]
 
     while True:
 
@@ -334,11 +330,11 @@ def main():
             for analysis in analyses:
                 symbol = analyses[analysis].symbol
                 summary = analyses[analysis].summary
-
+                print(f'symbol: {symbol}, summary: {summary}, time: {datetime.now()}')
                 if summary['RECOMMENDATION'] == 'STRONG_SELL' or summary['RECOMMENDATION'] == 'STRONG_BUY':
                     buy_or_sell(summary['RECOMMENDATION'], symbol, interval)
+        sleep(5)
 
-        sleep(3)
 
 
 @shared_task()
