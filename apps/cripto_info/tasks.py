@@ -270,8 +270,19 @@ def set_all():
 def buy_or_sell(what, symbol, interval):
     time = datetime.now()
     sleep(0.01)
-    spot = Spot()
-    price = float(spot.ticker_price(symbol)['price'])
+
+    price = cache.get('prices')
+    if price:
+        price = json.dumps(price)
+        if symbol not in price:
+            set_price.delay(symbol)
+            sleep(0.5)
+            price = json.dumps(cache.get('prices'))
+    else:
+        set_price.delay(symbol)
+        sleep(0.5)
+        price = json.dumps(cache.get('prices'))
+
     all_bots = TradingviewBot.objects.filter(what=what, symbol=symbol, interval=interval).all()
 
     if not len(all_bots):
@@ -284,7 +295,7 @@ def buy_or_sell(what, symbol, interval):
         )
         bot.save()
         return
-    # print(all_bots.last().time, 'last_time')
+
     last_signal = all_bots.last()
 
     old_price = float(last_signal.price)
@@ -313,12 +324,13 @@ def buy_or_sell(what, symbol, interval):
         bot.save()
         return
 
+
 # def price_websocket
 
 @shared_task()
 def main():
     print('Start!')
-    symbols = ["BINANCE:XRPUSDT", "BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:CRVUSDT", "BINANCE:BNBUSDT", "BINANCE:ADAUSDT", "BINANCE:SOLUSDT", "BINANCE:DOTUSDT", "BINANCE:LTCUSDT", "BINANCE:AVAXUSDT"]
+    symbols = ["BINANCE:XRPUSDT", "BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:CRVUSDT", "BINANCE:BNBUSDT", "BINANCE:BNBBUSD", "BINANCE:ADAUSDT", "BINANCE:SOLUSDT", "BINANCE:DOTUSDT", "BINANCE:LTCUSDT", "BINANCE:AVAXUSDT"]
     intervals = [Interval.INTERVAL_1_MINUTE, Interval.INTERVAL_15_MINUTES, Interval.INTERVAL_30_MINUTES, Interval.INTERVAL_1_HOUR]
 
     while True:
@@ -330,8 +342,8 @@ def main():
             for analysis in analyses:
                 symbol = analyses[analysis].symbol
                 summary = analyses[analysis].summary
-                print(f'symbol: {symbol}, summary: {summary}, time: {datetime.now()}')
                 if summary['RECOMMENDATION'] == 'STRONG_SELL' or summary['RECOMMENDATION'] == 'STRONG_BUY':
+                    print(f'symbol: {symbol}, summary: {summary}, time: {datetime.now()}')
                     buy_or_sell(summary['RECOMMENDATION'], symbol, interval)
         sleep(5)
 
@@ -407,3 +419,29 @@ def set_depth_cache():
 
     # twm.join()
     dcm.join()
+
+@shared_task()
+def set_price(symbol):
+    async def main_():
+        client = await AsyncClient.create()
+        bm = BinanceSocketManager(client)
+        # start any sockets here, i.e a trade socket
+        ts = bm.trade_socket(symbol.upper())
+        async with ts as tscm:
+            while True:
+                res = await tscm.recv()
+                prices = cache.get('prices')
+                # print(prices)
+                # print(type(prices))
+                if prices:
+                    prices = json.loads(prices)
+                    prices.update({symbol: res['p']})
+                else:
+                    prices = {res['s']: res['p']}
+
+                cache.set('prices', json.dumps(prices))
+
+        await client.close_connection()
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main_())
