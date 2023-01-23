@@ -269,7 +269,7 @@ def set_all():
 
 def buy_or_sell(what, symbol, interval):
     time = datetime.now()
-
+    sleep(0.01)
     spot = Spot()
     price = float(spot.ticker_price(symbol)['price'])
     all_bots = TradingviewBot.objects.filter(what=what, symbol=symbol, interval=interval).all()
