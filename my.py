@@ -157,7 +157,7 @@
 # plt.rcParams.update({'font.size': 10})
 # fig, ax1 = plt.subplots(figsize=(14,8))
 # fig.suptitle(stocksymbols[0], fontsize=10, backgroundcolor='blue', color='white')
-import json
+# import json
 # ax1 = plt.subplot2grid((14, 8), (0, 0), rowspan=8, colspan=14)
 # ax2 = plt.subplot2grid((14, 12), (10, 0), rowspan=6, colspan=14)
 # ax1.set_ylabel('Price in ₨')
@@ -269,60 +269,60 @@ import json
 # ws.on_open = on_open
 # ws.run_forever()
 
-import requests
-import csv
-import time
+# import requests
+# import csv
+# import time
+#
+# def get_historical_price(symbol, interval):
+#     url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit=1000"
+#     response = requests.get(url)
+#     data = response.json()
+#     return [[int(candle[0]/1000), float(candle[1]), float(candle[2]), float(candle[3]), float(candle[4]), float(candle[5])] for candle in data]
+#
+# def save_to_csv(data, file_name):
+#     with open(file_name, 'w') as file:
+#         writer = csv.writer(file)
+#         writer.writerow(['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+#         for row in data:
+#             writer.writerow(row)
+#
+# symbol = "BTCUSDT"
+# interval = "1m"
+# candles = get_historical_price(symbol, interval)
+# save_to_csv(candles, "bitcoin_price.csv")
 
-def get_historical_price(symbol, interval):
-    url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit=1000"
-    response = requests.get(url)
-    data = response.json()
-    return [[int(candle[0]/1000), float(candle[1]), float(candle[2]), float(candle[3]), float(candle[4]), float(candle[5])] for candle in data]
 
-def save_to_csv(data, file_name):
-    with open(file_name, 'w') as file:
-        writer = csv.writer(file)
-        writer.writerow(['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-        for row in data:
-            writer.writerow(row)
-
-symbol = "BTCUSDT"
-interval = "1m"
-candles = get_historical_price(symbol, interval)
-save_to_csv(candles, "bitcoin_price.csv")
-
-
-import pandas as pd
-import numpy as np
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-
-# Load the dataset
-df = pd.read_csv('bitcoin_price.csv')
-
-# Clean the dataset
-df = df.dropna()
-
-# Prepare the data for modeling
-X = df[['open', 'high', 'low', 'close', 'volume']]
-y = df['close']
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-
-# Scale the data
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
-# Train the model
-model = RandomForestRegressor(n_estimators=100, random_state=0)
-model.fit(X_train, y_train)
-
-# Predict the future price
-future_price = model.predict(X_test)
-print(future_price)
+# import pandas as pd
+# import numpy as np
+# from sklearn.ensemble import RandomForestRegressor
+# from sklearn.model_selection import train_test_split
+# from sklearn.preprocessing import StandardScaler
+#
+# # Load the dataset
+# df = pd.read_csv('bitcoin_price.csv')
+#
+# # Clean the dataset
+# df = df.dropna()
+#
+# # Prepare the data for modeling
+# X = df[['open', 'high', 'low', 'close', 'volume']]
+# y = df['close']
+#
+# # Split the data into training and testing sets
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+#
+# # Scale the data
+# scaler = StandardScaler()
+# X_train = scaler.fit_transform(X_train)
+# X_test = scaler.transform(X_test)
+#
+# # Train the model
+# model = RandomForestRegressor(n_estimators=100, random_state=0)
+# model.fit(X_train, y_train)
+#
+# # Predict the future price
+# future_price = model.predict(X_test)
+# print(future_price)
 # [23036.8224 23259.3497 23676.2677 23676.173  23636.4467 23121.9514
 #  23744.8408 23783.52   23672.9718 23646.6872 23733.1372 23686.7024
 #  23307.81   23716.2821 23721.3962 23706.5966 23245.6077 23861.5254
