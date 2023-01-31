@@ -287,7 +287,7 @@ class BotTradingview:
             price = float(json.loads(cache.get('prices'))[symbol])
         except:
             price = float(self.spot.ticker_price(symbol=symbol)['price'])
-            print(f'!!!!!!!!!!!!!!!!!!!!!!!!!!! ERROR {symbol} !!!!!!!!!!!!!!')
+            print(f'!!!!!!!!!!!!!!!!!!!!!!!!!!! {symbol} !!!!!!!!!!!!!!')
             print(price)
 
         all_bots = Bots.objects.filter(what=what, symbol=symbol, interval=interval).all()
@@ -361,7 +361,7 @@ class BotTradingview:
                     symbol = analyses[analysis].symbol
                     summary = analyses[analysis].summary
                     if summary['RECOMMENDATION'] == 'STRONG_SELL' or summary['RECOMMENDATION'] == 'STRONG_BUY':
-                        print(f'symbol: {symbol}, summary: {summary}, time: {datetime.now()}')
+                        # print(f'symbol: {symbol}, summary: {summary}, time: {datetime.now()}')
                         self.buy_or_sell(summary['RECOMMENDATION'], symbol, interval)
             sleep(5)
 
@@ -442,7 +442,7 @@ def check_ten():
                     except:
                         spot = Spot()
                         price = spot.ticker_price(symbol=symbol)['price']
-                        print('!!!!!!!!!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!')
+                        print(f'!!!!!!!!!!!!!!!!!!!!!!!!!!! {symbol} !!!!!!!!!!!!!!')
                         print(price)
                     # if price:
                     #     price = json.loads(price)
@@ -631,7 +631,7 @@ class BotRSI:
             price = float(json.loads(cache.get('prices'))[symbol])
         except:
             price = float(self.spot.ticker_price(symbol=symbol)['price'])
-            print(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!ERROR {symbol} !!!!!!!!!!!!!!')
+            print(f'!!!!!!!!!!!!!!!!!!!!!!!!!!! {symbol} !!!!!!!!!!!!!!')
             print(price)
 
         bot = Bots(
@@ -643,7 +643,7 @@ class BotRSI:
             time=datetime.now()
         )
         bot.save()
-        bot.what = f'START_SHORT №{bot.id}'
+        bot.what = f'START_LONG №{bot.id}'
         bot.save()
 
         start_position.delay(
@@ -662,7 +662,7 @@ class BotRSI:
             price = float(json.loads(cache.get('prices'))[symbol])
         except:
             price = float(self.spot.ticker_price(symbol=symbol)['price'])
-            print(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!ERROR {symbol}!!!!!!!!!!!!!!')
+            print(f'!!!!!!!!!!!!!!!!!!!!!!!!!!! {symbol} !!!!!!!!!!!!!!')
             print(price)
 
         bot = Bots(
@@ -709,7 +709,7 @@ class BotRSI:
         what = start_position['what']
         how_much = 0.001
         print(f'Start in_postsion: {symbol}, {what}, {start_price}')
-        print(0.003 + 0.006 + 0.009 + 0.012 + 0.015 + 0.018 + 0.021 + 0.024 + 0.027 + 0.03)
+        # print(0.003 + 0.006 + 0.009 + 0.012 + 0.015 + 0.018 + 0.021 + 0.024 + 0.027 + 0.03)
         # print(0.009 + 0.018 + 0.027 + 0.036 + 0.045 + 0.054 + 0.063 + 0.072 + 0.081 + 0.09)
 
         while True:
@@ -717,7 +717,7 @@ class BotRSI:
 
             if how_much > 0.01:
                 return
-            elif what == 'START_LONG':
+            elif 'START_LONG' in what:
                 price_take_profit = start_price * how_much + start_price
 
                 if price <= start_price - start_price * how_much and how_much == 0.001:
@@ -736,7 +736,7 @@ class BotRSI:
                     self.profit(price, symbol, start_position['interval'], f'take_profit №{start_position["id"]}: {how_much * 3}%')
                     how_much += 0.001
 
-            elif what == 'START_SHORT':
+            elif 'START_SHORT' in what:
                 price_take_profit = start_price - start_price * how_much
 
                 if price >= start_price * how_much + start_price and how_much == 0.001:
@@ -756,7 +756,7 @@ class BotRSI:
                     self.profit(price, symbol, start_position['interval'], f'take_profit №{start_position["id"]}: {how_much * 3}%')
                     how_much += 0.001
 
-            # elif price == start_price and how_much != 0.003:
+            # elif price == start_price and how_much >= 0.002:
             #     bot = Bots(
             #         bot='rsi',
             #         symbol=symbol,
@@ -846,7 +846,6 @@ def run_rsi():
 
 @shared_task()
 def start_position(bot):
-    print(dir(bot))
     BotRSI().in_position(bot)
 
 
