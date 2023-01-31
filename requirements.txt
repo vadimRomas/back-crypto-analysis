@@ -32,5 +32,9 @@ redis==4.3.5
 regex==2022.3.2
 requests==2.28.1
 tradingview-ta==3.3.0
+unicorn-binance-websocket-api==1.41.0
 websockets==10.3
 gunicorn==20.1.0
+websocket-client==0.57.0
+ccxt==2.6.92
+TA-lib==0.4.25

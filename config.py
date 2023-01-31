@@ -9,6 +9,7 @@ class Config:
     redis = env['redis_staging'] if env['redis_staging'] else env['redis_local']
     redis_port = env['redis_port']
     redis_host = env['redis_host']
+    telegram_token = env['telegram_token']
     # RAINTREE_MERCHANT_ID = env['RAINTREE_MERCHANT_ID']
     # BRAINTREE_PUBLIC_KEY = env['BRAINTREE_PUBLIC_KEY']
     # BRAINTREE_PRIVATE_KEY = env['BRAINTREE_PRIVATE_KEY']

@@ -13,5 +13,4 @@ urlpatterns = [
     path('tradingview_bot', ListTradingview.as_view()),
     path('depth', get_depth)
     # path("<str:room_name>/", room, name="room"),
-    # path('save/img/s3', lambda_save_graf)
 ]

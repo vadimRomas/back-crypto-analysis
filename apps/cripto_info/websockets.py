@@ -107,6 +107,7 @@ async def main_ws():
     asyncio.set_event_loop(asyncio.new_event_loop())
     # asyncio.set_event_loop(asyncio.new_event_loop())
     # twm.start_kline_socket(callback=handle_socket_message, symbol='BNBBTC')
+    twm.start_ticker_socket(callback=handle_socket_message)
 
     dcm.start_depth_cache(callback=handle_dcm_message, symbol='ETHUSDT')
     # twm.start_depth_socket(callback=handle_socket_message, symbol='ETHUSDT')

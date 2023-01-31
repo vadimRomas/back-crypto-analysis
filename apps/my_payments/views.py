@@ -71,18 +71,6 @@ def payment(request):
     return HttpResponse('Ok')
 
 
-# def lambda_payment(event, context):
-#
-#     Payment(
-#         amount=0.10,
-#         currency=Currency.USD,
-#         status=PaymentStatus.pay,
-#         user='1'
-#     )
-#
-#     return ('', 201)
-
-
 # def return_pay(request):
 #     pay_id = request.POST['id']
 #     payment = Payment(id=pay_id)

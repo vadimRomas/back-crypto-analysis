@@ -67,65 +67,6 @@
 #     serializer_class = AWSSerializer
 #
 #
-# def lambda_save_graf(request):
-#     symbol = request.GET['symbol']
-#     time = request.GET['time']
-#
-#     client = Spot()
-#     klines_btc_usdt = client.klines(symbol, interval=time)
-#
-#     tak = [
-#         [
-#             datetime.fromtimestamp(item[0] / 1000),
-#             item[1],
-#             item[2],
-#             item[3],
-#             item[4],
-#             item[5],
-#             datetime.fromtimestamp(item[6] / 1000),
-#             item[7],
-#             item[8],
-#             item[9],
-#             item[10],
-#             item[11],
-#         ]
-#         for item in klines_btc_usdt
-#     ]
-#     fild_name = ["Open_time", "Open", "High", "Low", "Close", "Volume", "Close_time", "Quote_asset_volume",
-#                  "Number_of_trades", "Taker_buy_base_asset_volume", "Taker_buy_quote_asset_volume", "Ignore"]
-#
-#     with open(f"{symbol}-{time}-{date.today()}.csv", "w") as file:
-#         writer = csv.writer(file)
-#         writer.writerow(fild_name)
-#         writer.writerows(tak)
-#
-#     air_quality = pd.read_csv(f"{symbol}-{time}-{date.today()}.csv")
-#     # table_statics = air_quality.describe()
-#     plt.plot(air_quality.Open)
-#     plt.legend()
-#     plt.savefig(f'{symbol}-{time}-{date.today()}.png')
-#
-#     s3 = boto3.client(
-#         's3',
-#         aws_access_key_id='AKIA24JOEL44PE3LVWHT',
-#         aws_secret_access_key='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'
-#     )
-#
-#     s3.upload_file(f'{symbol}-{time}-{date.today()}.png', 'mycryptoanalysis', f'{symbol}-{time}-{date.today()}.png')
-#     # s3.upload_file(f'{symbol}-{time}-{date.today()}.csv', 'mycryptoanalysis', f'{symbol}-{time}-{date.today()}.csv')
-#
-#     # list_objects = s3.list_objects(Bucket='mycryptoanalysis')
-#     # size = [item['Size'] for item in list_objects["Contents"]]
-#     # print(size)
-#     # s3.put_object(Bucket='mycryptoanalysis', fild_name='')
-#     # s3.download_file('mycryptoanalysis', f'{symbol}-{time}.png', f'download-{symbol}-{time}.png')  працює
-#
-#     # buckets = s3.list_buckets() work
-#
-#     # objects = s3.list_objects(Bucket='mycryptoanalysis') work
-#
-#     return HttpResponse('OK', 200)
-#
 #
 # def activate(request):
 #     jwt_token = request.headers['Authorization']

@@ -1,4 +1,5 @@
 import csv
+import datetime
 import json
 
 from time import sleep
@@ -7,8 +8,8 @@ from asgiref.sync import async_to_sync
 from binance.um_futures import UMFutures
 from tradingview_ta import Interval
 
-from apps.cripto_info.models import TradingviewBot
-from apps.cripto_info.serializers import TradingviewBotSerializer
+from apps.cripto_info.models import Bots
+from apps.cripto_info.serializers import BotsSerializer
 from apps.cripto_info.websockets import main_ws
 from config import Config
 from channels.generic.websocket import WebsocketConsumer
@@ -26,14 +27,14 @@ from binance.client import Client
 from binance.spot import Spot
 from django.core.cache import cache
 
-from apps.cripto_info.tasks import set_all, MyCache, main, set_depth_cache, buy_or_sell
+from apps.cripto_info.tasks import run_all_bots, start_position
 
 spot = Spot()
 client = Client(Config.binance_key, Config.binance_secret_key)
 
 class ListTradingview(ListAPIView):
-    queryset = TradingviewBot.objects.all()
-    serializer_class = TradingviewBotSerializer
+    queryset = Bots.objects.all()
+    serializer_class = BotsSerializer
 
 
 # class GraphRetrieveAPIView(ListAPIView):
@@ -139,7 +140,7 @@ def search_big_gamer(request):
     # todo change on websocket
     spot_result = cache.get("spot_depths")
     future_result = cache.get("future_depths")
-    print('1111111111111111')
+    # print('1111111111111111')
     # print(UMFutures().funding_rate('btcusdt'))
     # print(UMFutures().funding_rate('btcusdt'))
 
@@ -177,10 +178,28 @@ def get_tradingview_bot(request):
 
 
 def get_depth(request):
+    run_all_bots()
+
+    # start_position(bot)
+    # test_bot_rsi()
+
     # dept_socket_manager.delay()
     # set_depth_cache.delay()
-    main.delay()
+    # main.delay()
+    # check_with_balance()
     # buy_or_sell('STRONG_SELL', 'ETHUSDT', '15m')
+    # check_with_qqe_signal()
+
+    # all_orders = client.get_all_orders(symbol='BTCUSDT')
+    # account = client.get_account()
+    # client.futures_account_balance()
+    # futures_order = client.futures_get_order(symbol='BTCUSDT')
+    # print(account.keys())
+    # print('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    # print(account['canTrade'])
+    # print('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    # print([acc for acc in account['balances'] if float(acc['free']) != 0.00000000])
+    # set_price(['btcusdt', 'ethusdt'])
     result = cache.get('qwerty')
     return HttpResponse(result, 200)
 
@@ -272,121 +291,3 @@ def room(request, room_name):
     # print(tesla.get_analysis().summary)
     result = {"room_name": room_name}
     return HttpResponse(json.dumps(result), 200)
-
-# def lambda_handler(event, context):
-#     print(event)
-#
-#     object_get_context = event["getObjectContext"]
-#     request_route = object_get_context["outputRoute"]
-#     request_token = object_get_context["outputToken"]
-#     s3_url = object_get_context["inputS3Url"]
-#
-#     # Get object from S3
-#     response = requests.get(s3_url)
-#     original_object = response.content.decode('utf-8')
-#
-#     # Transform object
-#     transformed_object = original_object.upper()
-#
-#     # Write object back to S3 Object Lambda
-#     s3 = boto3.client('s3')
-#     s3.write_get_object_response(
-#         Body=transformed_object,
-#         RequestRoute=request_route,
-#         RequestToken=request_token)
-#
-#     return {'status_code': 200}
-
-
-# def lambda_save_graf(request):
-#     symbol = request.GET['symbol']
-#     time = request.GET['time']
-#
-#     klines_btc_usdt = spot.klines(symbol, interval=time)
-#
-#     tak = [
-#         [
-#             datetime.fromtimestamp(item[0] / 1000),
-#             item[1],
-#             item[2],
-#             item[3],
-#             item[4],
-#             item[5],
-#             datetime.fromtimestamp(item[6] / 1000),
-#             item[7],
-#             item[8],
-#             item[9],
-#             item[10],
-#             item[11],
-#         ]
-#         for item in klines_btc_usdt
-#     ]
-#     fild_name = ["Open_time", "Open", "High", "Low", "Close", "Volume", "Close_time", "Quote_asset_volume",
-#                  "Number_of_trades", "Taker_buy_base_asset_volume", "Taker_buy_quote_asset_volume", "Ignore"]
-#
-#     with open(f"{symbol}-{time}-{date.today()}.csv", "w") as file:
-#         writer = csv.writer(file)
-#         writer.writerow(fild_name)
-#         writer.writerows(tak)
-#
-#     air_quality = pd.read_csv(f"{symbol}-{time}-{date.today()}.csv")
-#     # table_statics = air_quality.describe()
-#     plt.plot(air_quality.Open)
-#     plt.legend()
-#     plt.savefig(f'{symbol}-{time}-{date.today()}.png')
-#
-#     s3 = boto3.client(
-#         's3',
-#         aws_access_key_id='AKIA24JOEL44PE3LVWHT',
-#         aws_secret_access_key='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'
-#     )
-#
-#     s3.upload_file(f'{symbol}-{time}-{date.today()}.png', 'mycryptoanalysis', f'{symbol}-{time}-{date.today()}.png')
-#     # s3.upload_file(f'{symbol}-{time}-{date.today()}.csv', 'mycryptoanalysis', f'{symbol}-{time}-{date.today()}.csv')
-#
-#     # list_objects = s3.list_objects(Bucket='mycryptoanalysis')
-#     # size = [item['Size'] for item in list_objects["Contents"]]
-#     # print(size)
-#     # s3.put_object(Bucket='mycryptoanalysis', fild_name='')
-#     # s3.download_file('mycryptoanalysis', f'{symbol}-{time}.png', f'download-{symbol}-{time}.png')  працює
-#
-#     # buckets = s3.list_buckets() work
-#
-#     # objects = s3.list_objects(Bucket='mycryptoanalysis') work
-#
-#     return HttpResponse('OK', 200)
-
-
-# def lambda_symbols(event, context):
-#     client = Client(api_key, api_secret)
-#     exchange_info = client.get_exchange_info()
-#     result = [item['symbol'] for item in exchange_info['symbols']]
-#
-#     return (result, 200)
-#
-#
-# def lambda_graph(event, context):
-#     symbol = event['symbol']
-#     time_frame = event['time']
-#
-#     klines_btc_usdt = spot.klines(symbol, time_frame)
-#
-#     tak = [
-#         {
-#             "Open_time": item[0],  # datetime.fromtimestamp(item[0] / 1000),
-#             "Open": item[1],
-#             "High": item[2],
-#             "Low": item[3],
-#             "Close": item[4],
-#             "Volume": item[5],
-#             "Close_time": item[6],  # datetime.fromtimestamp(item[6] / 1000),
-#             "Quote_asset_volume": item[7],
-#             "Number_of_trades": item[8],
-#             "Taker_buy_base_asset_volume": item[9],
-#             "Taker_buy_quote_asset_volume": item[10],
-#             "Ignore": item[11],
-#         }
-#         for item in klines_btc_usdt
-#     ]
-#
-#     return HttpResponse(json.dumps(tak), content_type="application/json")
