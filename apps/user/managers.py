@@ -23,4 +23,4 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_staff=True')
         if extra_kwargs.get('is_active') is not True:
             raise ValueError('Superuser must have is_active=True')
-        return self.create_user(email, password, extra_kwargs)
+        return self.create_user(email, password, **extra_kwargs)

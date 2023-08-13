@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.user.views import User, UserCreate
+from apps.user.views import User, UserCreate, AddOrGetAPIKeys, DeleteAPIKeys, get_user_orders
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
@@ -9,4 +9,7 @@ urlpatterns = [
     path('', User.as_view()),
     path('login', TokenObtainPairView.as_view(), name='tokens'),
     path('refresh', TokenRefreshView.as_view(), name='refresh'),
+    path('cryptoapikeys', AddOrGetAPIKeys.as_view()),
+    path('cryptoapikeys/<int:pk>', DeleteAPIKeys.as_view()),
+    path('orders', get_user_orders)
 ]

@@ -29,25 +29,7 @@ env = dotenv_values(".env")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-# CORS_ALLOW_HEADERS = [
-#     "accept",
-#     "accept-encoding",
-#     "authorization",
-#     "content-type",
-#     "dnt",
-#     "origin",
-#     # "user-agent",
-#     "x-csrftoken",
-#     "x-requested-with",
-# ]
-# CORS_ALLOW_METHODS = [
-#     "DELETE",
-#     "GET",
-#     "OPTIONS",
-#     "PATCH",
-#     "POST",
-#     "PUT",
-# ]
+
 ALLOWED_HOSTS = ["*"]
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
 CORS_ALLOW_ALL_ORIGINS = True
@@ -67,15 +49,10 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "rest_framework",
-    "payments",
-    "storages",
-    "channels",
 
     "backend_django",
     "apps.user",
-    "apps.my_payments",
     "apps.cripto_info",
-    "apps.aws"
 ]
 
 MIDDLEWARE = [
@@ -185,47 +162,9 @@ STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-PAYMENT_HOST = 'localhost:8000'
-PAYMENT_USES_SSL = False
-# PAYMENT_VARIANT_FACTORY = "my_payments"
+
 AUTH_USER_MODEL = 'user.UserModel'
 
-# AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-# AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-# AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-# AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN')
-# AWS_S3_OBJECT_PARAMETERS = {
-#     'CacheControl': 'max-age=86400',
-# }
-# AWS_LOCATION = 'static'
-#
-# # STATICFILES_DIRS = [
-# #     os.path.join(BASE_DIR, 'mysite/static'),
-# # ]
-# AWS_STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-# STATICFILES_STORAGE = os.environ.get('STATICFILES_STORAGE')
-AWS_ACCESS_KEY_ID = 'AKIA24JOEL44PE3LVWHT'
-AWS_SECRET_ACCESS_KEY = 'qR+WnSRLAqMh8QIglbkj4GFhz5g3yUhtWfD0/j2pV+ZtBCiDiieS'
-AWS_STORAGE_BUCKET_NAME = 'mycryptoanalysis'
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-AWS_LOCATION = 'static'
-
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'mysite/static'),
-# ]
-# STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
 ASGI_APPLICATION = "backend_django.asgi.application"
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [(Config.redis_host, Config.redis_port)],
-        },
-    },
-}
+
 

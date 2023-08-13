@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework.serializers import ModelSerializer, ValidationError
 
+from apps.user.models import UserAPIKeysModel
+
 UserModel = get_user_model()
 
 
@@ -25,3 +27,18 @@ class UserSerializer(ModelSerializer):
         user.created = validated_data.get('last_name', user.last_name)
         user.save()
         return user
+
+
+class APIKeysSerializer(ModelSerializer):
+    class Meta:
+        model = UserAPIKeysModel
+        fields = ['id', 'api_key', 'secret_key', 'user', 'name', 'cryptocurrency_exchange']
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'api_key': {'write_only': True},
+            'secret_key': {'write_only': True}
+        }
+
+    def create(self, validated_data):
+        validated_data["user"] = self.context["request"].user
+        return super().create(validated_data)

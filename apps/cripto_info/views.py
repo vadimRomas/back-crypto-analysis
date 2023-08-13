@@ -1,51 +1,43 @@
 import csv
-import datetime
 import json
 
-from time import sleep
-from random import randint
-from asgiref.sync import async_to_sync
 from binance.um_futures import UMFutures
+from rest_framework.permissions import IsAdminUser, AllowAny
 from tradingview_ta import Interval
 
 from apps.cripto_info.models import Bots
 from apps.cripto_info.serializers import BotsSerializer
-from apps.cripto_info.websockets import main_ws
 from config import Config
-from channels.generic.websocket import WebsocketConsumer
 
-from channels.consumer import AsyncConsumer
 from django.http import HttpResponse
 
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, CreateAPIView
 
-# from apps.cripto_info.models import GraphModel
-#
-# from apps.cripto_info.serializers import GraphSerializer
-import pprint
 from binance.client import Client
 from binance.spot import Spot
 from django.core.cache import cache
 
-from apps.cripto_info.tasks import run_all_bots, start_position
 
 spot = Spot()
 client = Client(Config.binance_key, Config.binance_secret_key)
 
-class ListTradingview(ListAPIView):
+
+class BotsCreateView(CreateAPIView):
     queryset = Bots.objects.all()
     serializer_class = BotsSerializer
+    permission_classes = [IsAdminUser]
 
 
-# class GraphRetrieveAPIView(ListAPIView):
-#     queryset = GraphModel.objects.all()
-#     serializer_class = GraphSerializer
-#
-#     def graph(self, request):
-#         queryset = self.get_queryset()
-#         pprint.pprint(queryset)
-#         return HttpResponse('Hello World!')
+class BotsListView(ListAPIView):
+    queryset = Bots.objects.all()
+    serializer_class = BotsSerializer
+    permission_classes = [AllowAny]
 
+
+class BotsRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+    queryset = Bots.objects.all()
+    serializer_class = BotsSerializer
+    permission_classes = [IsAdminUser]
 
 def all_symbols(request):
     # MyCache().future_depth()
@@ -178,7 +170,7 @@ def get_tradingview_bot(request):
 
 
 def get_depth(request):
-    run_all_bots()
+    # run_all_bots()
 
     # start_position(bot)
     # test_bot_rsi()
@@ -211,83 +203,3 @@ def websocket_big_gamer():
     return HttpResponse(json.dumps(result), 200)
 
 
-class PracticeConsumer(AsyncConsumer):
-
-    async def websocket_connect(self, event):
-        # when websocket connects
-        print("connected", event)
-
-        await self.send({"type": "websocket.accept",
-                         })
-
-        await self.send({"type": "websocket.send",
-                         "text": 0})
-
-    async def websocket_receive(self, event):
-        # when messages is received from websocket
-        print("receive", event)
-
-        sleep(1)
-
-        await self.send({"type": "websocket.send",
-                         "text": str(randint(0, 100))})
-
-    async def websocket_disconnect(self, event):
-        # when websocket disconnects
-        print("disconnected", event)
-
-
-class TextRoomConsumer(WebsocketConsumer):
-    def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
-        # Join room group
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name,
-            self.channel_name
-        )
-        self.accept()
-
-    def disconnect(self, close_code):
-        # Leave room group
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name,
-            self.channel_name
-        )
-
-    def receive(self, text_data):
-        # Receive message from WebSocket
-        text_data_json = json.loads(text_data)
-        text = text_data_json['text']
-        sender = text_data_json['sender']
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': text,
-                'sender': sender
-            }
-        )
-
-    def chat_message(self, event):
-        # Receive message from room group
-        text = event['message']
-        sender = event['sender']
-        # Send message to WebSocket
-        self.send(text_data=json.dumps({
-            'text': text,
-            'sender': sender
-        }))
-
-
-def room(request, room_name):
-    # tesla = TA_Handler(
-    #     symbol="TSLA",
-    #     screener="america",
-    #     exchange="NASDAQ",
-    #     interval='30m'
-    # )
-    # print(tesla.get_analysis().summary)
-    result = {"room_name": room_name}
-    return HttpResponse(json.dumps(result), 200)

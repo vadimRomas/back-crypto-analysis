@@ -733,7 +733,8 @@ class BotRSI:
                     return
 
                 if price >= price_take_profit:
-                    self.profit(price, symbol, start_position['interval'], f'take_profit №{start_position["id"]}: {how_much * 3}%')
+                    self.profit(price, symbol, start_position['interval'],
+                                f'take_profit №{start_position["id"]}: {how_much * 3}%')
                     how_much += 0.001
 
             elif 'START_SHORT' in what:
@@ -753,7 +754,8 @@ class BotRSI:
                     return
 
                 elif price <= price_take_profit:
-                    self.profit(price, symbol, start_position['interval'], f'take_profit №{start_position["id"]}: {how_much * 3}%')
+                    self.profit(price, symbol, start_position['interval'],
+                                f'take_profit №{start_position["id"]}: {how_much * 3}%')
                     how_much += 0.001
 
             # elif price == start_price and how_much >= 0.002:
@@ -807,6 +809,7 @@ class BotRSI:
                 m.update({"old_rsi": rsi})
             sleep(5)
 
+
 @shared_task()
 def set_price(symbols):
     def process_new_receives(stream_data, stream_buffer_name=False):
@@ -828,7 +831,8 @@ def set_price(symbols):
 
 
 def run_all_bots():
-    symbols = ["XRPUSDT", "BTCUSDT", "ETHUSDT", "CRVUSDT", "BNBUSDT", "BNBBUSD", "ADAUSDT", "SOLUSDT", "DOTUSDT", "LTCUSDT", "AVAXUSDT"]
+    symbols = ["XRPUSDT", "BTCUSDT", "ETHUSDT", "CRVUSDT", "BNBUSDT", "BNBBUSD", "ADAUSDT", "SOLUSDT", "DOTUSDT",
+               "LTCUSDT", "AVAXUSDT"]
     set_price.delay(symbols)
     run_tradingview.delay()
     run_rsi.delay()
@@ -981,13 +985,33 @@ class RillBotRSI:
             if old_rsi:
 
                 if old_rsi < 30 < rsi:
-                        ...
-                        # self.long(symbol, interval)
-                        # m.update({"in_position": True})
+                    ...
+                    # self.long(symbol, interval)
+                    # m.update({"in_position": True})
                 elif old_rsi > 70 > rsi:
-                        ...
-                        # self.short(symbol, interval)
-                        # m.update({"in_position": True})
+                    ...
+                    # self.short(symbol, interval)
+                    # m.update({"in_position": True})
 
             old_rsi = rsi
             sleep(5)
+
+# [2023-02-17 15:16:19,191: ERROR/ForkPoolWorker-1] Task apps.cripto_info.tasks.run_tradingview[4ee272e8-2349-470d-88f4-496aa822ede7] raised unexpected: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+# Feb 17 05:16:19 PM  Traceback (most recent call last):
+# Feb 17 05:16:19 PM    File "/opt/render/project/src/.venv/lib/python3.8/site-packages/celery/app/trace.py", line 451, in trace_task
+# Feb 17 05:16:19 PM      R = retval = fun(*args, **kwargs)
+# Feb 17 05:16:19 PM    File "/opt/render/project/src/.venv/lib/python3.8/site-packages/celery/app/trace.py", line 734, in __protected_call__
+# Feb 17 05:16:19 PM      return self.run(*args, **kwargs)
+# Feb 17 05:16:19 PM    File "/opt/render/project/src/apps/cripto_info/tasks.py", line 839, in run_tradingview
+# Feb 17 05:16:19 PM      BotTradingview().main()
+# Feb 17 05:16:19 PM    File "/opt/render/project/src/apps/cripto_info/tasks.py", line 357, in main
+# Feb 17 05:16:19 PM      analyses = get_multiple_analysis(screener="crypto", interval=interval,
+# Feb 17 05:16:19 PM    File "/opt/render/project/src/.venv/lib/python3.8/site-packages/tradingview_ta/main.py", line 424, in get_multiple_analysis
+# Feb 17 05:16:19 PM      result = json.loads(response.text)["data"]
+# Feb 17 05:16:19 PM    File "/opt/render/project/python/Python-3.8.10/lib/python3.8/json/__init__.py", line 357, in loads
+# Feb 17 05:16:19 PM      return _default_decoder.decode(s)
+# Feb 17 05:16:19 PM    File "/opt/render/project/python/Python-3.8.10/lib/python3.8/json/decoder.py", line 337, in decode
+# Feb 17 05:16:19 PM      obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+# Feb 17 05:16:19 PM    File "/opt/render/project/python/Python-3.8.10/lib/python3.8/json/decoder.py", line 355, in raw_decode
+# Feb 17 05:16:19 PM      raise JSONDecodeError("Expecting value", s, err.value) from None
+# Feb 17 05:16:19 PM  json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
