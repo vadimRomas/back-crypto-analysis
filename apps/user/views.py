@@ -49,15 +49,21 @@ class AddOrGetAPIKeys(ListCreateAPIView):
     def perform_create(self, serializer):
         secret_key = self.request.data.get('secret_key')
         api_key = self.request.data.get('api_key')
+        testnet = self.request.data.get('testnet')
+        market = self.request.data.get('market')
 
         try:
-            client = Client(api_key, secret_key)
-            client.get_account()
+            client = Client(api_key, secret_key, testnet=testnet)
+
+            if market == 'Spot':
+                client.get_account()
+            else:
+                client.futures_account_balance()
+
         except BinanceAPIException as error:
             raise ValidationError(error.message)
 
         serializer.save()
-        # raise ValidationError('You have already signed up')
 
     def get_queryset(self):
         user = self.request.user

@@ -27,10 +27,12 @@ class UserAPIKeysModel(models.Model):
     class Meta:
         db_table = 'users_api_keys'
 
-    name = models.CharField(max_length=255)
-    api_key = models.CharField(max_length=255)
-    secret_key = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
+    api_key = models.CharField(max_length=255, unique=True)
+    secret_key = models.CharField(max_length=255, unique=True)
     cryptocurrency_exchange = models.CharField(max_length=255)
+    testnet = models.BooleanField(default=False)
+    market = models.CharField(max_length=11)
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
 
 

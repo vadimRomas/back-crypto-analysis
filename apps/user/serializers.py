@@ -32,10 +32,9 @@ class UserSerializer(ModelSerializer):
 class APIKeysSerializer(ModelSerializer):
     class Meta:
         model = UserAPIKeysModel
-        fields = ['id', 'api_key', 'secret_key', 'user', 'name', 'cryptocurrency_exchange']
+        fields = ['id', 'api_key', 'secret_key', 'user', 'name', 'cryptocurrency_exchange', 'testnet', 'market']
         extra_kwargs = {
             'user': {'read_only': True},
-            'api_key': {'write_only': True},
             'secret_key': {'write_only': True}
         }
 
