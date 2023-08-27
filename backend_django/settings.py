@@ -168,3 +168,5 @@ AUTH_USER_MODEL = 'user.UserModel'
 ASGI_APPLICATION = "backend_django.asgi.application"
 
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/img/'

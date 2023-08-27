@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework.serializers import ModelSerializer, ValidationError
 
-from apps.user.models import UserAPIKeysModel
+from apps.cripto_info.serializers import BotsSerializer
+from apps.user.models import UserAPIKeysModel, UserBotsModel
 
 UserModel = get_user_model()
 
@@ -41,3 +42,12 @@ class APIKeysSerializer(ModelSerializer):
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
         return super().create(validated_data)
+
+
+class UserBotsSerializer(ModelSerializer):
+    bot = BotsSerializer(read_only=True)
+    cryptoAPIKeys = APIKeysSerializer(read_only=True)
+
+    class Meta:
+        model = UserBotsModel
+        fields = ['bot', 'cryptoAPIKeys', 'interval', 'symbol']

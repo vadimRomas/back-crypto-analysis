@@ -4,13 +4,13 @@ from django.shortcuts import get_list_or_404
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView, get_object_or_404, ListAPIView, \
-    ListCreateAPIView, DestroyAPIView
+    ListCreateAPIView, DestroyAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from apps.user.models import UserAPIKeysModel
-from apps.user.serializers import UserSerializer, APIKeysSerializer
+from apps.user.models import UserAPIKeysModel, UserBotsModel
+from apps.user.serializers import UserSerializer, APIKeysSerializer, UserBotsSerializer
 
 from binance.client import Client
 
@@ -67,6 +67,13 @@ class AddOrGetAPIKeys(ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        filter_params = self.request.query_params.get('filter')
+
+        if filter_params == 'free':
+            list_user_keys = get_list_or_404(UserAPIKeysModel, user=user, user_bots__isnull=True)
+
+            return list_user_keys
+
         list_user_keys = get_list_or_404(UserAPIKeysModel, user=user)
         return list_user_keys
 
@@ -74,6 +81,23 @@ class AddOrGetAPIKeys(ListCreateAPIView):
 class DeleteAPIKeys(DestroyAPIView):
     queryset = UserAPIKeysModel.objects.all()
     serializer_class = APIKeysSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class UserBotsCreateView(ListCreateAPIView):
+    queryset = UserBotsModel.objects.all()
+    serializer_class = UserBotsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        bot_id = self.request.data.get('bot')
+        crypto_api_keys_id = self.request.data.get('cryptoAPIKeys')
+        serializer.save(bot_id=bot_id, cryptoAPIKeys_id=crypto_api_keys_id)
+
+
+class UserBotsUpdateView(UpdateAPIView):
+    queryset = UserBotsModel.objects.all()
+    serializer_class = UserBotsSerializer
     permission_classes = [IsAuthenticated]
 
 

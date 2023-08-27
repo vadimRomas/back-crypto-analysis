@@ -20,6 +20,7 @@ flower==1.2.0
 jmespath==1.0.1
 psycopg2==2.9.3
 PyJWT==1.7.1
+Pillow==10.0.0
 pyOpenSSL==22.0.0
 python-binance==1.0.19
 python-dateutil==2.8.2

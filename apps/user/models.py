@@ -36,12 +36,13 @@ class UserAPIKeysModel(models.Model):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
 
 
-class UserBots(models.Model):
+class UserBotsModel(models.Model):
     class Meta:
         db_table = 'users_bots'
 
     symbol = models.CharField(max_length=25)
     interval = models.CharField(max_length=255)
-    time = models.DateTimeField(blank=False)
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    time = models.DateTimeField(auto_now_add=True)
     bot = models.ForeignKey(Bots, on_delete=models.CASCADE)
+    cryptoAPIKeys = models.OneToOneField(UserAPIKeysModel, on_delete=models.CASCADE, related_name='user_bots')
+    is_active = models.BooleanField(default=True)

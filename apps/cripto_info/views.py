@@ -18,8 +18,8 @@ from binance.spot import Spot
 from django.core.cache import cache
 
 
-spot = Spot()
-client = Client(Config.binance_key, Config.binance_secret_key)
+# spot = Spot()
+# client = Client(Config.binance_key, Config.binance_secret_key)
 
 
 class BotsCreateView(CreateAPIView):
@@ -40,6 +40,7 @@ class BotsRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
 
 def all_symbols(request):
+    spot = Spot()
     # MyCache().future_depth()
     # cache.delete('symbols')
     # print('yoben~')
@@ -58,6 +59,7 @@ def all_symbols(request):
 
 
 def graphs(request):
+    spot = Spot()
     symbol = request.GET['symbol']
     time_frame = request.GET['time']
 
@@ -109,6 +111,8 @@ def graphs(request):
 
 
 def get_price(request):
+    client = Client(Config.binance_key, Config.binance_secret_key)
+    spot = Spot()
     symbol = request.GET['symbol']
     # res = client.get_exchange_info()
     op = client.get_symbol_info(symbol)
